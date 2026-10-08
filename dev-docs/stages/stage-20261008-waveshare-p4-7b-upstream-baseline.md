@@ -14,6 +14,7 @@
 | 上游版本 | `v2.11.2` |
 | 上游提交 | `86d61c8c` |
 | 开发分支 | `feature/waveshare-p4-7b-support` |
+| Profile 提交 | `ec89138e` |
 | 独立工作树 | `D:\\Temp\\espcontrol-waveshare-p4-7b-profile-20261009` |
 | 当前产品工作树 | `D:\\nas\\espcontrol-waveshare7b` |
 | 当前产品基线提交 | `f366dc4` |
@@ -68,9 +69,41 @@
 1. 新工作树保持干净，阶段提交可独立回退。
 2. 不出现 Wi-Fi 凭据、摄像头地址和 HA 私密信息。
 3. ESPHome 配置检查通过。
-4. 普通配置和恢复/备用配置均完成离线构建，记录真实退出码。
+4. 普通 Wi-Fi 配置完成离线构建并记录真实退出码；Ethernet 入口仅完成结构接入，尚未单独宣称构建通过。
 5. `git diff --check`、相关单元测试和构建产物 SHA256 复核通过。
 6. 在用户明确要求前，不进行任何 COM3 或设备操作。
+
+## 本次离线构建结果
+
+- ESPHome：`2026.9.1`。
+- ESP-IDF：`5.5.5`。
+- 构建并行度：`3`。
+- 配置检查：通过；随后使用同一份本地未跟踪凭据完成完整编译，凭据未进入 Git，编译后已删除本地 `secrets.yaml`。
+- 完整编译：成功，Ninja `1756/1756`，退出码为 `0`。
+- 内存摘要：DIRAM 使用 `371184 / 576464`（`64.39%`）；Flash 使用 `5241756 / 15663104`（`33.5%`）。
+
+### 刷写参数
+
+| 项目 | 值 |
+| --- | --- |
+| Flash | `32MB` |
+| 模式/频率 | `dio` / `40m` |
+| bootloader | `0x2000` |
+| partition table | `0x8000` |
+| app | `0x20000` |
+
+这里的 partition table 地址是上游 Profile 使用的 `0x8000`。旧 Waveshare 产品构建曾使用 `0x9000`，两者不能混用；本阶段产物不能直接作为旧产品回滚镜像或硬件刷写方案。
+
+### 产物 SHA256
+
+| 文件 | 字节数 | SHA256 |
+| --- | ---: | --- |
+| `bootloader.bin` | `23632` | `5ED143B3369221548BD03E327B6EDDA4ADB35D5F35642A7B7317814BA88601E3` |
+| `partition-table.bin` | `3072` | `DFDA1F18324B6ADC69F0014CBB96CD2DEB28CFC604E32A16844F2A0A0ABC5FA2` |
+| `espcontrol-waveshare-7b.bin` | `5242160` | `8E91EE2BB223ED9BAAE3ACF9EEEB90E1305AECEFF528B11DC1ECD3DFEADE2281` |
+| `firmware.factory.bin` | `5373232` | `3DE07FB4197BC1AFAEAF94BF99A1DF651CAF6F502B2F9BC146F7DCA887A3A2EB` |
+
+本次仅完成离线配置检查和构建；未连接 COM3、未刷写、未回滚、未擦除 Flash、未读取设备 Flash、未发送门铃或视频测试流。
 
 ## 当前结论
 
