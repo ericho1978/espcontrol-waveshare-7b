@@ -105,6 +105,28 @@
 
 本次仅完成离线配置检查和构建；未连接 COM3、未刷写、未回滚、未擦除 Flash、未读取设备 Flash、未发送门铃或视频测试流。
 
+## 第一条上游改进：旋转补偿轴
+
+上游 `4b9aa4bc` 修复了 7 英寸屏在旋转选择变化后，封面图播放按钮、图标和文字沿错误轴缩放的问题。该提交原本只覆盖 Guition 7 英寸 Profile；本分支将相同的最小逻辑加入 Waveshare 7B 的 `apply_screen_rotation`，并把 Waveshare 7B 纳入同一回归测试。
+
+- 实现提交：`754265fa`。
+- 生产改动：在 `cover_art_apply_responsive_layout` 之前设置 `90/270` 为纵向补偿轴，其余旋转为横向补偿轴。
+- 未改动：音频、TTS、门铃、H264/MJPEG、Frigate、Wi-Fi 凭据和 COM3 操作。
+- 静态红绿测：通过；修改前确认缺少轴更新，修改后确认轴更新位于布局调用之前。
+- Python 测试语法检查：通过。
+- ESPHome 配置检查：通过。
+- ESPHome 增量编译：通过，分区大小检查通过。
+- 宿主 C++ 回归测试：未执行；当前 Windows 环境没有 `c++`、`g++` 或 `clang++` 可执行文件，不能把该测试标记为通过。
+
+### 本条改进后的产物
+
+| 文件 | 字节数 | SHA256 |
+| --- | ---: | --- |
+| `bootloader.bin` | `23632` | `5ED143B3369221548BD03E327B6EDDA4ADB35D5F35642A7B7317814BA88601E3` |
+| `partition-table.bin` | `3072` | `DFDA1F18324B6ADC69F0014CBB96CD2DEB28CFC604E32A16844F2A0A0ABC5FA2` |
+| `espcontrol-waveshare-7b.bin` | `5242176` | `20F82AD96F61B0301475B1C3849FEE1A397AA725EFA21EB89F58D43A98375300` |
+| `firmware.factory.bin` | `5373248` | `3F757CBEBC07DF6F69628F3ACFD7FC5639B315116BFAC2A2B3EFCFA58651F932` |
+
 ## 当前结论
 
 阶段起点采用“上游 v2.11.2 + 独立 Waveshare 7B Profile + 产品功能后续选择性移植”的路线。当前可工作的门铃/TTS版本仍是实机基线；本分支首先证明硬件 Profile 能在上游代码上离线构建，再进入图片资源改进。
