@@ -1,5 +1,7 @@
 # EspControl Waveshare 7B
 
+中文文档 | [English](README.en.md)
+
 这是一个基于 [EspControl](https://github.com/jtenniswood/espcontrol) 的 Waveshare ESP32-P4-WIFI6-Touch-LCD-7B 适配与案例项目。
 
 项目目标不是复制上游固件，而是保留 EspControl 的网页配置、Home Assistant 集成和卡片系统，同时为 Waveshare 7B 建立独立硬件 Profile，并逐步加入经过验证的家庭场景功能。
