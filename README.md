@@ -1,130 +1,144 @@
-![EspControl on a 7-inch touchscreen: home screen with temperature, clock, and control tiles](docs/public/images/home_screen_hero.jpg)
+# EspControl Waveshare 7B
 
-# EspControl
+这是一个基于 [EspControl](https://github.com/jtenniswood/espcontrol) 的 Waveshare ESP32-P4-WIFI6-Touch-LCD-7B 适配与案例项目。
 
-**Turn an affordable touchscreen into a simple smart home control panel.**
+项目目标不是复制上游固件，而是保留 EspControl 的网页配置、Home Assistant 集成和卡片系统，同时为 Waveshare 7B 建立独立硬件 Profile，并逐步加入经过验证的家庭场景功能。
 
-EspControl lets you put the Home Assistant controls you use every day onto a dedicated screen: lights by the door, heating in the hallway, garage controls in the utility room, room temperatures on a desk, or a tidy bedside panel for scenes and alarms.
+## 当前状态
 
-You do not need to write code, edit YAML, or build your own ESPHome setup. Install the firmware from a web browser, connect the screen to WiFi, add it to Home Assistant, then choose what appears on the display from the screen's built-in setup page.
+已完成：
 
-**Documentation and install guide:** [jtenniswood.github.io/espcontrol](https://jtenniswood.github.io/espcontrol/)
+- 建立 Waveshare 7B 独立硬件 Profile。
+- 适配 ESP32-P4、32MB Flash、1024x600 MIPI-DSI 屏幕。
+- 适配 GT911 触摸、GPIO32 背光和 ESP32-C6 SDIO Wi-Fi/BLE 协处理器。
+- 基于上游 v2.11.2 完成离线配置检查和 ESP-IDF 编译。
+- 移植 7 英寸屏旋转时的封面图按钮、图标和文字补偿修复。
+- 保留独立分支、阶段文档和可复现构建记录。
 
-## What It Unlocks
+正在规划：
 
-- **A real control panel for your home** - give family and guests simple buttons instead of asking them to use the Home Assistant app.
-- **Room-by-room control** - place a small screen where it is useful: kitchen, hallway, office, garage, bedroom, or next to a door.
-- **One-tap routines** - run scenes, scripts, and automations such as movie mode, bedtime, away mode, or garden lights.
-- **Live home information** - show temperatures, sensors, weather, dates, clocks, and other Home Assistant readings at a glance.
-- **Flexible pages of controls** - keep the main screen simple, then open extra pages for rooms, devices, or less common actions.
-- **Local smart home control** - the panel talks to Home Assistant on your own network. It is not a cloud dashboard.
-- **Easy changes later** - rearrange buttons, change icons, adjust the active colour, back up your setup, and install firmware updates without starting again.
+- 升级到上游 v2.12.0，并逐项保留 Waveshare 7B 差异。
+- 中文固件界面和字体适配。
+- Home Assistant 摄像头、门铃快照和 TTS 案例整理。
+- ESPHome Device Builder 的构建管理方式。
+- 7 寸家用版与 4.3 寸商业版的 Profile 规划。
 
-## What You Can Control
+尚未作为本分支稳定功能合并：
 
-EspControl works with devices and helpers that are already in Home Assistant, including:
+- 当前产品线中的语音唤醒、STT 和双向对讲。
+- H264/MJPEG 播放器和视频传输逻辑。
+- 真实设备刷写和长期实机验收。
 
-- Lights, switches, fans, and plugs
-- Scenes, scripts, buttons, and automations
-- Blinds, shutters, covers, and garage doors
-- Media players for playback, volume, progress, and now-playing display
-- Climate controls for thermostats and HVAC devices
-- Sensors such as temperature, humidity, power, battery, or custom text states
-- Weather, clocks, dates, and time zones
-- Built-in relays on supported panels
+## 硬件 Profile
 
-If Home Assistant can see it, EspControl is designed to make it easier to put that control or information on a touchscreen.
+| 项目 | 参数 |
+| --- | --- |
+| 主控 | ESP32-P4，360MHz |
+| Flash | 32MB |
+| 显示屏 | 1024x600 MIPI-DSI |
+| 触摸 | GT911，SDA GPIO7，SCL GPIO8，RESET GPIO22，INT GPIO21 |
+| 背光 | GPIO32，低电平有效，最大功率限制 80% |
+| Wi-Fi/BLE | ESP32-C6 over SDIO |
+| SDIO | CMD/CLK/D0-D3 = GPIO19/18/14/15/16/17 |
+| C6 复位 | GPIO54，高电平有效 |
+| SDIO 频率 | 20MHz |
 
-![Web-based card configuration on the 4-inch 4848S040](docs/public/images/4848s040-buttons.png)
+## 目录
 
-## How It Works
+```text
+devices/waveshare-esp32-p4-7b/   Waveshare 7B ESPHome Profile
+dev-docs/stages/                  阶段记录和构建证据
+components/                      EspControl 和硬件组件
+common/                          共享设备配置
+product/v2/translations/         固件翻译源文件
+```
 
-1. **Buy a supported ESP32 touchscreen.**
-2. **Install EspControl from your browser** using the web installer.
-3. **Connect the screen to WiFi** using the setup screen it creates.
-4. **Add it to Home Assistant** when Home Assistant discovers it.
-5. **Allow Home Assistant actions** so the panel is permitted to control your devices.
-6. **Open the panel's web page** and choose the buttons, sensors, pages, active colour, and display settings you want.
+## 本地编译
 
-After that, the panel runs on its own. You can still change the layout at any time from a phone, tablet, or computer browser.
+当前开发入口：
 
-Start here: [Install EspControl](https://jtenniswood.github.io/espcontrol/getting-started/install)
+```text
+devices/waveshare-esp32-p4-7b/dev.yaml
+```
 
-## Supported Screens
+需要本地创建未跟踪的 `secrets.yaml`：
 
-EspControl supports several low-cost ESP32 touchscreens. Larger screens give you more room for controls; smaller screens are useful beside doors, on desks, or in individual rooms.
+```yaml
+wifi_ssid: "your-wifi-name"
+wifi_password: "your-wifi-password"
+```
 
-| | 10.1" JC8012P4A1 | 7" JC1060P470 | 4.3" JC4880P443 | 4" ESP32-P4 86 Panel | 4" 4848S040 |
-|---|:-:|:-:|:-:|:-:|:-:|
-| Image | Image pending | ![7-inch JC1060P470](docs/public/images/jc1060p470-hero.jpg) | ![4.3-inch JC4880P443](docs/public/images/jc4880p443-hero.jpg) | Image pending | ![4-inch 4848S040](docs/public/images/4848s040-hero.jpg) |
-| Layout | 1280x800 landscape · 20 card slots | 1024x600 landscape · 15 card slots | 480x800 portrait · 6 card slots | 720x720 square · 9 card slots | 480x480 square · 9 card slots |
-| Processor | ESP32-P4 | ESP32-P4 | ESP32-P4 | ESP32-P4 | ESP32-S3 |
-| Panel | [AliExpress ~£40](https://s.click.aliexpress.com/e/_c4W6TYvp) | [AliExpress ~£40](https://s.click.aliexpress.com/e/_c335W0r5) | [AliExpress ~£24](https://s.click.aliexpress.com/e/_c32jr3eN) | [AliExpress ~£45](https://s.click.aliexpress.com/e/_c3O6ndAX) | [AliExpress ~£16](https://s.click.aliexpress.com/e/_c3sIhvBv) |
-| 3D mount | [MakerWorld](https://makerworld.com/en/models/2490049-guition-p4-10inch-screen-stand#profileId-2736046) | [MakerWorld](https://makerworld.com/en/models/2387421-guition-esp32p4-jc1060p470-7inch-screen-desk-mount#profileId-2614995) | [MakerWorld](https://makerworld.com/en/models/2982320-desk-stand-for-4-3-inch-jc4880p443-esp32-screen#profileId-3346161) | [MakerWorld](https://makerworld.com/en/models/2720366-waveshare-esp32-p4-smart-86-box-screen-desk-stand#profileId-3013481) | [MakerWorld](https://makerworld.com/en/models/2581572-guition-esp32s3-4848s040-case-stand#profileId-2847301) |
+示例编译命令：
 
-See the [screen guides](https://jtenniswood.github.io/espcontrol/getting-started/install) for full details on each model.
+```powershell
+esphome config devices/waveshare-esp32-p4-7b/dev.yaml
+$env:NINJAFLAGS = "-j3"
+esphome compile devices/waveshare-esp32-p4-7b/dev.yaml
+```
 
-## Built for Everyday Use
+本项目阶段默认只做离线构建。没有经过硬件门禁前，不要直接执行 `esphome run`。
 
-- **Simple setup page** - configure the screen from a normal browser.
-- **Drag-and-drop layout** - move controls around without editing files.
-- **Subpages** - make folder-like pages for rooms or groups of controls.
-- **Different card sizes** - make important controls larger and keep smaller items compact.
-- **Dedicated card types** - Switch, Lights, Action, Local Action, Option Select, Webhook, Trigger, Sensor, Local Sensor, Doors & Windows, Presence, Slider, Fans, Vacuum, Lawn Mower, Cover, Garage Door, Lock, Alarm, Date & Time, World Clock, Weather, Camera, Media, Climate, Internal Switches, Screen Lock, and Subpage.
-- **Home Assistant action support** - run scenes, scripts, automations, buttons, webhooks, and helper changes directly from the panel.
-- **Camera and media displays** - show camera images, media player state, album art, playback controls, volume, and progress.
-- **Display scheduling** - use idle timers, night schedules, brightness controls, and optional presence sensors so the screen behaves well in real rooms.
-- **Appearance controls** - choose icons, labels, status text, active colour, clock display, rotation, and temperature units from the setup page.
-- **Screensaver and brightness controls** - dim or sleep the display when it is not in use.
-- **Automatic updates** - keep standard firmware current after the first install.
-- **Backup and restore** - save your layout and copy it to another panel.
-- **Language support** - choose the panel language, with translation files available for contributors.
+## ESPHome Device Builder
 
-## What You Need
+ESPHome Device Builder 可以作为编译和设备管理入口，但 Git 仓库仍是源码主线。
+建议流程：
 
-- A supported ESP32 touchscreen
-- A USB-C data cable for the first install
-- A computer running Chrome or Edge for flashing the firmware
-- Home Assistant running on your home network
-- 2.4 GHz WiFi for the panel
+```text
+GitHub 仓库 -> Device Builder -> 编译/下载/OTA -> Home Assistant
+```
 
-## Project Links
+不要把真实 Wi-Fi、RTSP、Home Assistant 或 SSH 凭据提交到仓库。
 
-- [Documentation](https://jtenniswood.github.io/espcontrol/)
-- [Install guide](https://jtenniswood.github.io/espcontrol/getting-started/install)
-- [FAQ](https://jtenniswood.github.io/espcontrol/reference/faq)
-- [Report a bug or request a feature](https://github.com/jtenniswood/espcontrol/issues)
+## 分支和上游
 
-## Contributor Checks
+- `main`：个人项目稳定线。
+- `feature/waveshare-p4-7b-support`：当前 Waveshare 7B 适配线。
+- `feature/upstream-v2.12`：后续上游升级线。
+- `feature/chinese-firmware`：后续中文固件翻译线。
 
-After changing card configuration, the web setup page, or generated device files, run:
+本地远程仓库：
 
-- `npm run check:product`
-- `npm run check:fast`
-- `npm run check:web-browser-smoke`
-- `npm run docs:build`
+```text
+origin   https://github.com/ericho1978/espcontrol-waveshare-7b.git
+upstream https://github.com/jtenniswood/espcontrol.git
+```
 
-Use `npm run check:product` as the focused product preflight when changing shared schema,
-card behavior, web setup behavior, device metadata, generated outputs, backup compatibility,
-or release-facing metadata.
+同步上游时，应在独立分支中逐项合并和验证，不要直接覆盖 Waveshare 7B Profile 或当前产品功能。
 
-See [Product Source Map](product/README.md) for the files that should be edited by hand
-and the generated outputs that should be rebuilt instead of manually changed.
+## 汉化计划
 
-## License
+固件固定文字来自：
 
-EspControl is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+```text
+product/v2/translations/strings.en.txt
+```
 
-In plain terms, you can view, change, and share the software for non-commercial purposes. Commercial use needs separate permission from the project owner.
+中文翻译将使用独立的 `strings.zh-cn.txt`，再通过项目脚本生成：
 
-This is a source-available non-commercial license rather than an OSI-approved open source license, because the standard open source definition does not allow restrictions on commercial use.
+```powershell
+python scripts/build.py i18n
+```
 
-Required notice: see [NOTICE](NOTICE).
+不要直接编辑生成文件 `components/espcontrol/i18n_generated.h`。中文字体还需要补充可显示中文字符的字体资源，并单独进行 Flash、内存和屏幕显示验证。
 
-## Support This Project
+## 许可证和上游声明
 
-If EspControl is useful in your home, you can support ongoing development by buying me a coffee.
+本项目包含来自上游 EspControl 的代码和资源，必须同时遵守仓库中的 `LICENSE` 与 `NOTICE`。上游项目使用 PolyForm Noncommercial License 1.0.0；商业部署或销售前需要取得相应许可。
 
-<a href="https://www.buymeacoffee.com/jtenniswood">
-  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60" style="border-radius:999px;" />
-</a>
+上游项目：
+
+- https://github.com/jtenniswood/espcontrol
+- https://jtenniswood.github.io/espcontrol/
+
+## 安全边界
+
+仓库不应包含：
+
+- `secrets.yaml`
+- 真实 Wi-Fi 密码
+- 摄像头 RTSP 用户名和密码
+- Home Assistant、SSH 或 Docker 凭据
+- 带真实配置的设备备份
+- 未脱敏的运行日志和截图
+
+这是一个可复现的硬件适配与产品化案例项目，不代表所有功能已经完成实机验收。
