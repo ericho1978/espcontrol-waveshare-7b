@@ -24,7 +24,8 @@ Planned:
 - Add Chinese firmware strings and font support.
 - Document Home Assistant camera, doorbell snapshot, and TTS examples.
 - Document ESPHome Device Builder as a build and management option.
-- Define separate home 7-inch and commercial 4.3-inch product profiles.
+- Evaluate the differences between the 7-inch home profile and a 4.3-inch deployment profile, and plan reusable shared capabilities.
+- The 4.3-inch profile has not been implemented or tested on hardware. Confirm upstream license terms and permissions before any commercial release.
 
 Not yet considered stable features in this branch:
 
