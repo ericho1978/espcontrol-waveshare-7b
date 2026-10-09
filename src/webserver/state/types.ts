@@ -36,6 +36,7 @@ export interface DeviceConfig {
   readonly portrait?: {
     readonly cols: number;
     readonly rows: number;
+    readonly slots?: number;
     readonly screen: {
       readonly width: string;
       readonly aspect: string;
@@ -185,6 +186,13 @@ export interface AppState {
   brightnessDayVal: number;
   brightnessNightVal: number;
   brightnessMode: string;
+  themeMode: string;
+  themeAutoMethod: string;
+  themeActive: string;
+  themeLightStart: string;
+  themeDarkStart: string;
+  themeSunriseOffset: number;
+  themeSunsetOffset: number;
   manualBrightnessVal: number;
   brightnessDawnTime: string;
   brightnessDuskTime: string;

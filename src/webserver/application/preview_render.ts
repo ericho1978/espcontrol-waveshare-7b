@@ -1,5 +1,6 @@
 import { state } from "../state/app_instance";
 import { WEB_UI_COLORS } from "../state/ui_tokens";
+import { PREVIEW_THEME_COLORS, previewEffectiveTheme } from "../state/preview_theme";
 import { escHtml } from "./ui_primitives";
 import {
     buttonConfigDisabledForDevice as isButtonConfigDisabledForDevice,
@@ -19,6 +20,11 @@ import type { ScreenRotationFeature } from "./screen_rotation_state";
 import type { ControlsShellFeature } from "./controls_shell";
 import type { GridFeature } from "./grid";
 import type { ButtonSettingsSelectionFeature } from "./button_settings_selection";
+
+const SENSOR_SURFACE_CARD_TYPES: ReadonlySet<string> = new Set([
+    "sensor", "local_sensor", "door_window", "presence", "weather",
+    "weather_forecast", "calendar", "clock", "timezone",
+]);
 export interface PreviewRenderDependencies {
     readonly updateClockBarItemUi: () => void;
     readonly document: Document;
@@ -90,6 +96,7 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
         return buttonTypePickerKeys(!!isSub, null).indexOf(key) >= 0;
     }
     function renderPreview(this: any) {
+        const previewColors = PREVIEW_THEME_COLORS[previewEffectiveTheme(state)];
         dependencies.updateClockBarItemUi();
         var main: any = els.previewMain;
         main.innerHTML = "";
@@ -115,13 +122,20 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
                 backBtn.innerHTML =
                     '<span class="sp-btn-icon sp-back-hit mdi mdi-chevron-left"></span>' +
                         '<span class="sp-btn-label">' + escHtml(backLabel) + '</span>';
-                backBtn.style.backgroundColor = "#" + WEB_UI_COLORS.secondary;
+                backBtn.style.backgroundColor = "#" + previewColors.surfaceCard;
                 backBtn.style.cursor = "pointer";
                 backBtn.setAttribute("data-pos", pos);
                 backBtn.draggable = !isConfigLocked();
                 main.appendChild(backBtn);
             }
             else if (slot > 0) {
+                if (slot > c.maxSlots) {
+                    var unavailable: any = document.createElement("div");
+                    unavailable.className = "sp-empty-cell";
+                    unavailable.setAttribute("data-pos", pos);
+                    main.appendChild(unavailable);
+                    continue;
+                }
                 var bIdx: any = slot - 1;
                 if (c.isSub && bIdx >= c.buttons.length)
                     continue;
@@ -141,8 +155,9 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
                 }
                 var iconName: any = resolveIcon(b);
                 var label: any = b.label || b.entity || "Configure";
-                var color: any = (b.type === "sensor" || b.type === "local_sensor" || b.type === "door_window" || b.type === "presence" || b.type === "weather" || b.type === "weather_forecast" || b.type === "calendar" || b.type === "clock" || b.type === "timezone")
-                    ? WEB_UI_COLORS.tertiary : WEB_UI_COLORS.secondary;
+                var color: any = SENSOR_SURFACE_CARD_TYPES.has(b.type || "")
+                    ? previewColors.surfaceSensor
+                    : previewColors.surfaceCard;
                 var previewTypeDef: any = dependencies.cards.definitions[b.type || ""] || null;
                 if (previewTypeDef && c.isSub && !buttonTypeRegistryValue(previewTypeDef, "allowInSubpage", false)) {
                     previewTypeDef = null;
